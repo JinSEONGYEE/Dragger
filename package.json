@@ -1,0 +1,35 @@
+{
+  "name": "dragger",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "mcp": "node bin/mcp.mjs"
+  },
+  "bin": {
+    "dragger": "bin/dragger.mjs",
+    "dragger-mcp": "bin/mcp.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/client": "2.4.0",
+    "typescript": "5.9.3"
+  },
+  "peerDependencies": {
+    "typescript": ">=5.0.0"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/server": "2.4.0",
+    "zod": "4.6.7"
+  },
+  "license": "MIT",
+  "description": "AI-assisted visual UI editing with a local MCP server",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JinSEONGYEE/Dragger.git"
+  }
+}

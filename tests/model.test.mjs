@@ -1,0 +1,6 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import {css,validateBundle,serviceURL} from '../dist/model.mjs';
+const change={id:'chat-input',property:'width',value:80,unit:'%',viewport:'mobile'};
+test('UI values produce scoped CSS without HTML or account data',()=>{const b=validateBundle({schema:'dragger/v1',changes:[{...change,html:'private',email:'secret'}],token:'secret'});assert.deepEqual(b,{schema:'dragger/v1',changes:[change]});assert.match(css(b),/max-width: 767px/);assert.match(css(b),/width: 80%/);});
+test('invalid selectors, properties, units and nonfinite values are rejected',()=>{for(const patch of [{id:'x"] body {'},{property:'backgroundImage'},{unit:'url(foo)'},{value:Infinity},{value:101},{viewport:'all'}])assert.throws(()=>css({schema:'dragger/v1',changes:[{...change,...patch}]}));});
+test('desktop and mobile changes remain scoped separately',()=>{const result=css({schema:'dragger/v1',changes:[change,{...change,viewport:'desktop',value:60}]});assert.match(result,/min-width: 768px/);assert.match(result,/60%/);});
+test('service URLs reject credentials and executable schemes',()=>{assert.equal(serviceURL('http://localhost:3000'),'http://localhost:3000/');for(const url of ['javascript:alert(1)','file:///tmp/x','https://user:token@example.com'])assert.throws(()=>serviceURL(url));});

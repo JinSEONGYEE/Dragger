@@ -1,0 +1,9 @@
+const panel=document.getElementById('panel'),tabs=[...panel.querySelectorAll('[role=tab]')];
+function activate(tab,focus=false){for(const t of tabs){const active=t===tab;t.setAttribute('aria-selected',String(active));t.tabIndex=active?0:-1;document.getElementById(t.getAttribute('aria-controls')).hidden=!active;}panel.querySelector('.panel-content').scrollTop=0;if(focus)tab.focus();}
+for(const tab of tabs){tab.onclick=()=>activate(tab);tab.onkeydown=e=>{const i=tabs.indexOf(tab),next=e.key==='ArrowRight'?(i+1)%tabs.length:e.key==='ArrowLeft'?(i+tabs.length-1)%tabs.length:e.key==='Home'?0:e.key==='End'?tabs.length-1:null;if(next!==null){e.preventDefault();activate(tabs[next],true);}};}
+let drag=null;
+panel.addEventListener('pointerdown',e=>{const input=e.target.closest('input[type=number]');if(!input||input.disabled||input.closest('fieldset')?.disabled||e.button!==0)return;drag={input,id:e.pointerId,x:e.clientX,value:Number(input.value)||0,moved:false};input.setPointerCapture(e.pointerId);});
+panel.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.id)return;const delta=e.clientX-drag.x;if(!drag.moved&&Math.abs(delta)<4)return;drag.moved=true;e.preventDefault();document.body.classList.add('value-dragging');const input=drag.input,step=Number(input.step)||1,value=Math.round((drag.value+delta*(e.shiftKey?5:.5))/step)*step;input.value=Math.max(Number(input.min),Math.min(Number(input.max),value));input.dispatchEvent(new Event('input',{bubbles:true}));});
+function stop(){drag=null;document.body.classList.remove('value-dragging');}
+for(const name of ['pointerup','pointercancel','lostpointercapture'])panel.addEventListener(name,stop);addEventListener('blur',stop);
+const selected=document.getElementById('selected'),feedback=document.getElementById('feedback');for(const el of [selected,feedback])new MutationObserver(()=>{el.title=el.textContent;}).observe(el,{childList:true,subtree:true,characterData:true});

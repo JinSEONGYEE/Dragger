@@ -1,0 +1,2 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import {readFileSync} from 'node:fs';
+test('release lockfile contains registry packages, never machine-local dependency links',()=>{const lock=JSON.parse(readFileSync(new URL('../package-lock.json',import.meta.url),'utf8'));for(const [name,p] of Object.entries(lock.packages)){assert.ok(name===''||name.startsWith('node_modules/'),name);assert.ok(!p.link,name);if(p.resolved)assert.ok(p.resolved.startsWith('https://registry.npmjs.org/'),name);}});
