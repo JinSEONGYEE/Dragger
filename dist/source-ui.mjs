@@ -11,15 +11,16 @@ const draftKey=()=>`dragger.sourceDraft.${origin()}`;
 let draftSync=Promise.resolve();
 function syncAIDraft(){const body={appOrigin:origin(),locale:new URL(frame.src).pathname.split('/')[1],changes:[...edits.values()]};draftSync=draftSync.catch(()=>{}).then(async()=>{const r=await fetch('/api/draft/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});if(!r.ok)throw Error('AI 검토용 변경 동기화 실패');}).catch(()=>{});}
 function persist(){localStorage.setItem(draftKey(),JSON.stringify([...edits]));syncAIDraft();}
-function restoreDraft(){try{edits=new Map(JSON.parse(localStorage.getItem(draftKey())||'[]'));}catch{edits=new Map();}}
+const editKey=c=>JSON.stringify([c.source.file,c.source.index,c.instance?.file,c.instance?.index,c.property,c.slot]);
+function restoreDraft(){try{edits=new Map(JSON.parse(localStorage.getItem(draftKey())||'[]').map(([,c])=>[editKey(c),c]));}catch{edits=new Map();}}
 function replayDraft(){frame.contentWindow.postMessage({type:'dragger:source-replay',changes:[...edits.values()]},origin());}
 const verificationDetails=document.createElement('pre');verificationDetails.id='verification-details';verificationDetails.setAttribute('aria-live','polite');$('source-status').after(verificationDetails);
 const status=s=>$('source-status').textContent=s;
 function verify(){frame.contentWindow.postMessage({type:'dragger:verify',expected,token},origin());}
 addEventListener('message',async e=>{
  if(e.source!==frame.contentWindow||e.origin!==origin())return;const m=e.data;try{if(m?.pageUrl&&new URL(m.pageUrl).origin===origin())currentPage=m.pageUrl;}catch{}
- if(['dragger:applied','dragger:text-applied','dragger:svg-applied'].includes(m?.type)&&m.source&&!expected){const property=m.type==='dragger:text-applied'?'text':m.property;const key=JSON.stringify([m.source.file,m.source.index,property,m.slot]);edits.set(key,{pageUrl:currentPage||frame.src,source:m.source,property,slot:m.slot,value:m.value,unit:m.unit,viewport:$('mobile').classList.contains('active')?'mobile':'desktop'});persist();if(appliedPlan)return;plan=null;$('source-apply').disabled=true;$('source-pr').disabled=true;}
- if(['dragger:restored','dragger:svg-restored'].includes(m?.type)&&m.source){for(const [key,c] of edits)if(c.source.file===m.source.file&&c.source.index===m.source.index)edits.delete(key);persist();plan=null;$('source-apply').disabled=true;$('source-pr').disabled=true;}
+ if(['dragger:applied','dragger:text-applied','dragger:svg-applied'].includes(m?.type)&&m.source&&!expected){const property=m.type==='dragger:text-applied'?'text':m.property;const key=editKey({...m,property});edits.set(key,{pageUrl:currentPage||frame.src,source:m.source,instance:m.instance,property,slot:m.slot,value:m.value,unit:m.unit,viewport:$('mobile').classList.contains('active')?'mobile':'desktop'});persist();if(appliedPlan)return;plan=null;$('source-apply').disabled=true;$('source-pr').disabled=true;}
+ if(['dragger:restored','dragger:svg-restored'].includes(m?.type)&&m.source){for(const [key,c] of edits)if(c.source.file===m.source.file&&c.source.index===m.source.index&&JSON.stringify(c.instance||null)===JSON.stringify(m.instance||null))edits.delete(key);persist();plan=null;$('source-apply').disabled=true;$('source-pr').disabled=true;}
  if(m?.type==='dragger:restored-all'&&!expected){edits.clear();persist();plan=null;$('source-apply').disabled=true;$('source-pr').disabled=true;}
  if(m?.type==='dragger:ready'&&!expected&&!appliedPlan){restoreDraft();replayDraft();syncAIDraft();}
  if(m?.type==='dragger:ready'&&expected){verificationReady=true;verify();}
