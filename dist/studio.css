@@ -60,4 +60,4 @@ input[type=number]{appearance:textfield}input[type=number]::-webkit-inner-spin-b
 
 .setup-main-actions{flex-wrap:wrap;align-items:center}.setup-app-link{display:inline-flex;align-items:center;border:1px solid var(--border);border-radius:6px;padding:8px 12px;color:inherit;text-decoration:none;font-size:13px}.setup-app-link[hidden]{display:none}
 
-.edit-scope-label{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px;margin:8px 0}.edit-scope-label select{width:155px}.edit-scope-note{font-size:11px;color:var(--muted-foreground);line-height:1.5;margin:0 0 12px}
+.edit-scope-label{display:flex;flex-direction:column;align-items:stretch;gap:6px;font-size:12px;margin:8px 0;color:var(--muted-foreground)}.edit-scope-label select{width:100%;color:var(--foreground);height:36px;padding-top:0;padding-bottom:0}.edit-scope-note{font-size:11px;color:var(--muted-foreground);line-height:1.5;margin:0 0 12px}
